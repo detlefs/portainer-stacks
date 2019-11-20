@@ -1,0 +1,16 @@
+version: "2"
+services:
+  node-red:
+    image: nodered/node-red:latest
+    environment:
+      - TZ=Europe/Berlin
+    ports:
+      - "1880:1880"
+    networks:
+      - node-red-net
+    volumes:
+      - nodered_node-red-data:/data
+    restart: unless-stopped
+
+networks:
+  node-red-net:

@@ -1,0 +1,17 @@
+version: '2'
+services:
+    embyserver:
+        volumes:
+            - '/var/media/.config:/config'
+            - '/var/media:/media'
+        devices:
+            - '/dev/dri:/dev/dri'
+        ports:
+            - '8096:8096'
+            - '8920:8920'
+        environment:
+            - UID=1000
+            - GID=44
+            - GIDLIST=44
+        image: 'emby/embyserver:latest'
+        restart: unless-stopped
