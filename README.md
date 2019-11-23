@@ -10,7 +10,8 @@ Currently the following services/apps are contained:
 
 - Emby Server
 
-    Emby, formerly Media Browser, is a media aggregator plugin for Media Center that takes your recorded, digital, or ripped media and presents it in a simple, easy to use web interface
+    Emby, formerly Media Browser, is a media aggregator plugin for Media Center that takes your recorded, digital, or ripped media and presents it in a simple, easy to use web interface.
+    The stack includes also EmbyStat
 
 - Heimdall
 
