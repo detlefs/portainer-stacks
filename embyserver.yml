@@ -15,3 +15,10 @@ services:
             - GIDLIST=44
         image: 'emby/embyserver:latest'
         restart: unless-stopped
+    embystat:
+        volumes:
+            - 'embystat_config:/app/config'
+        ports:
+            - '6555:6555'
+        image: 'uping/embystat:beta'
+        restart: unless-stopped
