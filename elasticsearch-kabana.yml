@@ -8,7 +8,7 @@ services:
       - node.name=elasticsearch
       - discovery.type=single-node
       - discovery.seed_hosts=elasticsearch
-       -cluster.initial_master_nodes=elasticsearch
+      - cluster.initial_master_nodes=elasticsearch
       - cluster.name=docker-cluster
       - bootstrap.memory_lock=true
       - "ES_JAVA_OPTS=-Xms512m -Xmx512m"

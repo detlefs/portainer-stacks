@@ -1,6 +1,7 @@
 version: '2'
 services:
     embyserver:
+        container_name: 'embyserver'
         volumes:
             - '/var/media/.config:/config'
             - '/var/media:/media'
@@ -16,6 +17,7 @@ services:
         image: 'emby/embyserver:latest'
         restart: unless-stopped
     embystat:
+        container_name: 'embystat'
         volumes:
             - 'embystat_config:/app/config'
         ports:
