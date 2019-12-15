@@ -1,0 +1,32 @@
+version: "2"
+services:
+  mysql:
+    image: mysql:5
+    container_name: snipe_mysql
+    restart: unless-stopped
+    volumes:
+      - snipe_sqldata:/var/lib/mysql
+    environment:
+      - MYSQL_ROOT_PASSWORD=K1ngk0ng
+      - MYSQL_USER=snipe
+      - MYSQL_PASSWORD=snipe
+      - MYSQL_DATABASE=snipe
+  snipeit:
+    image: linuxserver/snipe-it:latest
+    container_name: snipe-it
+    restart: unless-stopped
+    depends_on:
+      - mysql
+    volumes:
+      - snipe_data:/config
+    environment:
+      - APP_URL=http://shuttlenas:8080
+      - MYSQL_PORT_3306_TCP_ADDR=mysql
+      - MYSQL_PORT_3306_TCP_PORT=3306
+      - MYSQL_DATABASE=snipe
+      - MYSQL_USER=snipe
+      - MYSQL_PASSWORD=snipe
+      - PGID=1000
+      - PUID=1000
+    ports:
+      - "8080:80"

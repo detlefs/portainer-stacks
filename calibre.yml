@@ -1,0 +1,19 @@
+---
+version: "2"
+services:
+  calibre:
+    image: linuxserver/calibre:latest
+    container_name: calibre
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=Europe/Berlin
+      #- GUAC_USER=abc #optional
+      #- GUAC_PASS=900150983cd24fb0d6963f7d28e17f72 #optional
+    volumes:
+      - calibre:/config
+      - /var/media/:/var/media
+    ports:
+      - 8087:8080
+      - 8081:8081
+    restart: unless-stopped
