@@ -20,3 +20,7 @@ Currently the following services/apps are contained:
 - NodeRED
   
     Node-RED is a programming tool for wiring together hardware devices, APIs and online services in new and interesting ways.
+
+- mitmproxy
+
+    [mitmproxy](https://mitmproxy.org) is an interactive network packages analyzing proxy with a web UI. mitmproxy in this stack configures the proxy to listen on port `8080` and the web UI to be accessible via [http://[ip-address]:8081](http://[ip-address]:8081)
