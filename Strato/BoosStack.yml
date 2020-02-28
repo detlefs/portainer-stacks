@@ -1,0 +1,49 @@
+---
+    version: "2"
+    services:
+      bookstack:
+        image: linuxserver/bookstack
+        container_name: bookstack
+        environment:
+          - PUID=1000
+          - PGID=1000
+          - DB_HOST=bookstack_db
+          - DB_USER=bookstack
+          - DB_PASS=bookstack
+          - DB_DATABASE=bookstack
+        volumes:
+          - bookstack_config:/config
+        #ports:
+          #- 88:80
+        restart: unless-stopped
+        depends_on:
+          - bookstack_db
+        labels:
+          - "traefik.enable=true"
+          - "traefik.http.routers.bookstack.entrypoints=http"
+          - "traefik.http.routers.bookstack.rule=Host(`www.schneide-r.de`)"
+          - "traefik.http.middlewares.bookstack-https-redirect.redirectscheme.scheme=https"
+          - "traefik.http.routers.bookstack.middlewares.bookstack-https-redirect"
+          - "traefik.http.routers.bookstack-secure.entrypoints=https"
+          - "traefik.http.routers.bookstack-secure.rule=Host(`www.schneide-r.de`)"
+          - "traefik.http.routers.bookstack-secure.tls=true"
+          - "traefik.http.routers.bookstack-secure.tls.certresolver=http"
+          - "traefik.http.routers.bookstack-secure.service.bookstack"
+          - "traefik.http.services.bookstack.loadbalancer.server.port=9000"
+          - "traefik.docker.network=proxy"
+      bookstack_db:
+        image: linuxserver/mariadb
+        container_name: bookstack_db
+        environment:
+          - PUID=1000
+          - PGID=1000
+          - MYSQL_ROOT_PASSWORD=K1ngk0ng
+          - TZ=Europe/Berlin
+          - MYSQL_DATABASE=bookstack
+          - MYSQL_USER=bookstack
+          - MYSQL_PASSWORD=bookstack
+        volumes:
+          - mariadb_config:/config
+        #ports:
+          #- 3306:3306
+        restart: unless-stopped
