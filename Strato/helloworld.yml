@@ -1,0 +1,26 @@
+version: '2'
+
+services:
+    hello:
+        image: tutum/hello-world
+        container_name: hello-world
+        networks:
+            - proxy
+        labels:
+            - "traefik.enable=true"
+            - "traefik.http.routers.helloworld.entrypoints=http"
+            - "traefik.http.routers.helloworld.rule=Path(`/hello`)"
+            - "traefik.http.middlewares.helloworld-https-redirect.redirectscheme.scheme=https"
+            - "traefik.http.routers.helloworld.middlewares=helloworld-https-redirect"
+            - "traefik.http.routers.helloworld-secure.entrypoints=https"
+            - "traefik.http.routers.helloworld-secure.rule=Path(`/hello`)"
+            - "traefik.http.routers.helloworld-secure.tls=true"
+            - "traefik.http.routers.helloworld-secure.tls.certresolver=http"
+            - "traefik.http.routers.helloworld-secure.service=helloworld"
+            - "traefik.http.services.helloworld.loadbalancer.server.port=80"
+            - "traefik.docker.network=proxy"
+
+networks:
+    proxy:
+        external:
+            name: proxy
