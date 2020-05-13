@@ -15,6 +15,7 @@ services:
     - MYSQL_PASSWORD=K1ngk0ng
     volumes:
     - book_data_db:/var/lib/mysql
+    restart: unless-stopped
 
   app:
     image: pschmitt/bookstack
@@ -46,6 +47,7 @@ services:
       - "traefik.http.routers.bookstack-secure.service=bookstack"
       - "traefik.http.services.bookstack.loadbalancer.server.port=80"
       - "traefik.docker.network=proxy"
+    restart: unless-stopped
 
 networks:
   internal:
