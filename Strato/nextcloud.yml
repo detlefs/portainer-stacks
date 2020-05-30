@@ -1,0 +1,51 @@
+version: '2'
+
+services:
+  nextcloud-db:
+    image: mariadb
+    container_name: nextcloud-db
+    command: --transaction-isolation=READ-COMMITTED --log-bin=ROW
+    restart: unless-stopped
+    volumes:
+      - nc_db:/var/lib/mysql
+    environment:
+      - MYSQL_ROOT_PASSWORD=nextcloud   #### Hier Passwort eingeben ####
+      - MYSQL_PASSWORD=nextcloud      #### Hier Passwort eingeben ####
+      - MYSQL_DATABASE=nextcloud 
+      - MYSQL_USER=nextcloud     #### Hier Nutzer eingeben ####
+      - MYSQL_INITDB_SKIP_TZINFO=1 
+    networks:
+      - internal
+
+  nextcloud-app:
+    image: nextcloud
+    container_name: nextcloud-app
+    restart: unless-stopped
+    volumes:
+      - nc_app:/var/www/html
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.nextcloud-app.entrypoints=http"
+      - "traefik.http.routers.nextcloud-app.rule=Host(`nc.schneide-r.de`)"
+      - "traefik.http.middlewares.nextcloud-app-https-redirect.redirectscheme.scheme=https"
+      - "traefik.http.routers.nextcloud-app.middlewares=nextcloud-app-https-redirect"
+      - "traefik.http.routers.nextcloud-app-secure.entrypoints=https"
+      - "traefik.http.routers.nextcloud-app-secure.rule=Host(`nc.schneide-r.de`)"
+      - "traefik.http.routers.nextcloud-app-secure.tls=true"
+      - "traefik.http.routers.nextcloud-app-secure.tls.certresolver=http"
+      - "traefik.http.routers.nextcloud-app-secure.service=nextcloud-app"
+      - "traefik.http.services.nextcloud-app.loadbalancer.server.port=80"
+      - "traefik.docker.network=proxy"
+      # - "traefik.http.routers.nextcloud-app-secure.middlewares=nextcloud-dav,secHeaders@file"
+      # - "traefik.http.middlewares.nextcloud-dav.replacepathregex.regex=^/.well-known/ca(l|rd)dav"
+      # - "traefik.http.middlewares.nextcloud-dav.replacepathregex.replacement=/remote.php/dav/"
+    networks:
+      - proxy
+      - internal
+
+networks:
+  internal:
+    driver: bridge
+  proxy:
+    external:
+      name: proxy
