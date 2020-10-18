@@ -1,0 +1,58 @@
+version: '2'
+
+services:
+  db:
+    image: mariadb
+    container_name: bookstack-db
+    networks:
+      - internal
+#    ports:
+#      - 42333:3306
+    environment:
+    - MYSQL_ROOT_PASSWORD=K1ngk0ng
+    - MYSQL_DATABASE=bookstack
+    - MYSQL_USER=bookstack
+    - MYSQL_PASSWORD=K1ngk0ng
+    volumes:
+    - book_data_db:/var/lib/mysql
+    restart: unless-stopped
+
+  app:
+    image: linuxserver/bookstack
+    container_name: bookstack
+    networks:
+      - internal
+      - proxy
+    depends_on:
+    - db
+    environment:
+    - DB_HOST=db:3306
+    - DB_DATABASE=bookstack
+    - DB_USERNAME=bookstack
+    - DB_PASSWORD=K1ngk0ng
+    - APP_URL=https://book.felted.de
+    volumes:
+    - bookstack_data:/config
+    #- book_uploads:/var/www/bookstack/public/uploads
+    #- book_storage-uploads:/var/www/bookstack/storage/uploads
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.bookstack.entrypoints=http"
+      - "traefik.http.routers.bookstack.rule=Host(`book.felted.de`)"
+      - "traefik.http.middlewares.bookstack-https-redirect.redirectscheme.scheme=https"
+      - "traefik.http.routers.bookstack.middlewares=bookstack-https-redirect"
+      - "traefik.http.routers.bookstack-secure.entrypoints=https"
+      - "traefik.http.routers.bookstack-secure.rule=Host(`book.felted.de`)"
+      - "traefik.http.routers.bookstack-secure.tls=true"
+      - "traefik.http.routers.bookstack-secure.tls.certresolver=http"
+      - "traefik.http.routers.bookstack-secure.service=bookstack"
+      - "traefik.http.services.bookstack.loadbalancer.server.port=80"
+      - "traefik.docker.network=proxy"
+    restart: unless-stopped
+
+networks:
+  internal:
+    driver: bridge
+  proxy:
+    external:
+      name: proxy
