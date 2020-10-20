@@ -1,0 +1,49 @@
+version: 2
+
+services:
+  cockpit_db:
+    image: mongo:latest
+    container_name: cockpit_db
+    volumes:
+      - cockpit_db_data:/data/db
+      - cockpit_db_config:/data/configdb
+    networks:
+      - internal
+  cockpit:
+    image: agentejo/cockpit
+    container_name: cockpit
+    environment:
+      COCKPIT_SESSION_NAME: cockpit
+      COCKPIT_SALT: 09056a30-d23a-4de7-9ea1-89bbacdf50c1
+      COCKPIT_DATABASE_SERVER: "mongodb://cockpit_db:27017"
+      COCKPIT_DATABASE_NAME: cockpit_master
+    volumes:
+      - cockpit_data:/var/www/html/storage
+    depends_on:
+      - cockpit_db
+    networks:
+      - internal
+      - proxy
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.cockpit.entrypoints=http"
+      - "traefik.http.routers.cockpit.rule=Host(`www.felted.de`) || Host(`felted.de`)"
+      - "traefik.http.middlewares.cockpit-https-redirect.redirectscheme.scheme=https"
+      - "traefik.http.routers.cockpit.middlewares=cockpit-https-redirect"
+      - "traefik.http.routers.cockpit-secure.entrypoints=https"
+      - "traefik.http.routers.cockpit-secure.rule=Host(`www.felted.de`) || Host(`felted.de`)"
+      - "traefik.http.routers.cockpit-secure.tls=true"
+      - "traefik.http.routers.cockpit-secure.tls.certresolver=http"
+      - "traefik.http.routers.cockpit-secure.service=cockpit"
+      - "traefik.http.services.cockpit.loadbalancer.server.port=80"
+      - "traefik.docker.network=proxy"
+
+networks:
+  internal:
+    driver: bridge
+  proxy:
+    external:
+      name: proxy
+
+
+detlef | JF)U1j}%=289md/Na
