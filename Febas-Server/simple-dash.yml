@@ -1,0 +1,35 @@
+version: 2
+
+services:
+  simple-dash:
+    image: kghf/simple-dash:latest
+    container_name: simple-dash
+    volumes:
+      - /var/lib/docker/volumes/simple-dash_config.json:/usr/share/nginx/html/config.json
+    networks:
+      - proxy
+    restart: unless-stopped
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.simple-dash.entrypoints=http"
+      - "traefik.http.routers.simple-dash.rule=Host(`www.felted.de`) || Host(`felted.de`)"
+      - "traefik.http.middlewares.simple-dash-https-redirect.redirectscheme.scheme=https"
+      - "traefik.http.routers.simple-dash.middlewares=simple-dash-https-redirect"
+      - "traefik.http.routers.simple-dash-secure.entrypoints=https"
+      - "traefik.http.routers.simple-dash-secure.rule=Host(`www.felted.de`) || Host(`felted.de`)"
+      - "traefik.http.routers.simple-dash-secure.tls=true"
+      - "traefik.http.routers.simple-dash-secure.tls.certresolver=http"
+      - "traefik.http.routers.simple-dash-secure.service=simple-dash"
+      - "traefik.http.services.simple-dash.loadbalancer.server.port=80"
+      - "traefik.docker.network=proxy"
+
+networks:
+  proxy:
+    external:
+      name: proxy
+
+# The config file is /var/lib/docker/volumes/simple-dash_config.json
+# Get iocns for the config file from Font Awesome: https://fontawesome.com/icons
+# Source: https://github.com/kutyla-philipp/simple-dash
+# Docker container: https://hub.docker.com/r/kghf/simple-dash
+# Docker source: https://github.com/larskghf/simple-dash-docker
