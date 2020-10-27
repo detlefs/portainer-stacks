@@ -17,6 +17,7 @@ services:
       - "8334:8334"
     networks:
       - proxy
+      # - internal
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.filestash.entrypoints=http"
@@ -34,9 +35,16 @@ services:
   # onlyoffice:
   #   container_name: filestash_oods
   #   image: onlyoffice/documentserver
-  #   restart: always
+  #   restart: unless-stopped
+  #   networks:
+  #     - internal
 
 networks:
+  # internal:
+  #   driver: bridge
   proxy:
     external:
       name: proxy
+
+
+# I^sTr~>?62nU14]-Z
