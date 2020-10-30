@@ -1,0 +1,56 @@
+version: "2"
+services:
+
+  db:
+    image: postgres:11-alpine
+    container_name: wikijs_db
+    environment:
+      POSTGRES_DB: wiki
+      POSTGRES_PASSWORD: wikijsrocks
+      POSTGRES_USER: wikijs
+    logging:
+      driver: "none"
+    restart: unless-stopped
+    volumes:
+      - wikijs_db_data:/var/lib/postgresql/data
+    networks:
+      - internal
+
+  wikijs:
+    image: requarks/wiki:2
+    container_name: wikijs
+    depends_on:
+      - db
+    environment:
+      DB_TYPE: postgres
+      DB_HOST: db
+      DB_PORT: 5432
+      DB_USER: wikijs
+      DB_PASS: wikijsrocks
+      DB_NAME: wiki
+    restart: unless-stopped
+    networks:
+      - internal
+      - proxy
+    # ports:
+    #   - "3000:3000"
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.wikijs.entrypoints=http"
+      - "traefik.http.routers.wikijs.rule=Host(`wiki.felted.de`)"
+      - "traefik.http.middlewares.wikijs-https-redirect.redirectscheme.scheme=https"
+      - "traefik.http.routers.wikijs.middlewares=wikijs-https-redirect"
+      - "traefik.http.routers.wikijs-secure.entrypoints=https"
+      - "traefik.http.routers.wikijs-secure.rule=Host(`wiki.felted.de`)"
+      - "traefik.http.routers.wikijs-secure.tls=true"
+      - "traefik.http.routers.wikijs-secure.tls.certresolver=http"
+      - "traefik.http.routers.wikijs-secure.service=wikijs"
+      - "traefik.http.services.wikijs.loadbalancer.server.port=3000"
+      - "traefik.docker.network=proxy"
+
+networks:
+  internal:
+    driver: bridge
+  proxy:
+    external:
+      name: proxy
