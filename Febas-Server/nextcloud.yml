@@ -53,6 +53,3 @@ networks:
   proxy:
     external:
       name: proxy
-
-
-# detlef | &1A3pr*S2{ZYIGpH*
