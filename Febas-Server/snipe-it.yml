@@ -1,0 +1,66 @@
+version: "2"
+
+services:
+
+  mysql:
+    image: mysql:5
+    container_name: snipe_mysql
+    restart: always
+    volumes:
+      - snipe_mysql:/var/lib/mysql
+    environment:
+      - MYSQL_ROOT_PASSWORD=sniperoot
+      - MYSQL_USER=snipe
+      - MYSQL_PASSWORD=snipe
+      - MYSQL_DATABASE=snipe
+    networks:
+      - internal
+  
+  snipeit:
+    image: linuxserver/snipe-it:latest
+    container_name: snipe-it
+    restart: always
+    depends_on:
+      - mysql
+    volumes:
+      - snipe:/config
+    environment:
+      - APP_URL=https://snipe.felted.de
+      - MYSQL_PORT_3306_TCP_ADDR=mysql
+      - MYSQL_PORT_3306_TCP_PORT=3306
+      - MYSQL_DATABASE=snipe
+      - MYSQL_USER=snipe
+      - MYSQL_PASSWORD=snipe
+      - PGID=1000
+      - PUID=1000
+    # ports:
+    #   - "80:80"
+    networks:
+      - internal
+      - proxy
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.snipe.entrypoints=http"
+      - "traefik.http.routers.snipe.rule=Host(`snipe.felted.de`)"
+      - "traefik.http.middlewares.snipe-https-redirect.redirectscheme.scheme=https"
+      - "traefik.http.routers.snipe.middlewares=snipe-https-redirect"
+      - "traefik.http.routers.snipe-secure.entrypoints=https"
+      - "traefik.http.routers.snipe-secure.rule=Host(`snipe.felted.de`)"
+      - "traefik.http.routers.snipe-secure.tls=true"
+      - "traefik.http.routers.snipe-secure.tls.certresolver=http"
+      - "traefik.http.routers.snipe-secure.service=snipe"
+      - "traefik.http.services.snipe.loadbalancer.server.port=80"
+      - "traefik.docker.network=proxy"
+
+networks:
+  internal:
+    driver: bridge
+  proxy:
+    external:
+      name: proxy
+
+
+# Web: https://snipeitapp.com/
+# Docs: https://snipe-it.readme.io/docs/overview
+# Docker: https://hub.docker.com/r/linuxserver/snipe-it
+# GitHub: https://github.com/snipe/snipe-it
