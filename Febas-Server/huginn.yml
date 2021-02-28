@@ -1,0 +1,32 @@
+version: 2
+
+services:
+  huginn:
+    image: huginn/huginn
+    container_name: huginn
+    networks:
+      - proxy
+    volumes:
+      - huginn_data:/var/lib/mysql
+    restart: unless-stopped
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.huginn.entrypoints=http"
+      - "traefik.http.routers.huginn.rule=Host(`hug.felted.de`)"
+      - "traefik.http.middlewares.huginn-https-redirect.redirectscheme.scheme=https"
+      - "traefik.http.routers.huginn.middlewares=huginn-https-redirect"
+      - "traefik.http.routers.huginn-secure.entrypoints=https"
+      - "traefik.http.routers.huginn-secure.rule=Host(`hug.felted.de`)"
+      - "traefik.http.routers.huginn-secure.tls=true"
+      - "traefik.http.routers.huginn-secure.tls.certresolver=http"
+      - "traefik.http.routers.huginn-secure.service=huginn"
+      - "traefik.http.services.huginn.loadbalancer.server.port=3000"
+      - "traefik.docker.network=proxy"
+
+networks:
+  proxy:
+    external:
+      name: proxy
+
+
+# GitHub: https://github.com/huginn/huginn

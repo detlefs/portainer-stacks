@@ -1,0 +1,31 @@
+version: 2
+
+services:
+  dashmachine:
+    image: rmountjoy/dashmachine:latest
+    container_name: dashmachine
+    volumes:
+      - dashmachine_data:/dashmachine/dashmachine/user_data
+    restart: unless-stopped
+    networks:
+      - proxy
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.dashmachine.entrypoints=http"
+      - "traefik.http.routers.dashmachine.rule=Host(`dm.felted.de`)"
+      - "traefik.http.middlewares.dashmachine-https-redirect.redirectscheme.scheme=https"
+      - "traefik.http.routers.dashmachine.middlewares=dashmachine-https-redirect"
+      - "traefik.http.routers.dashmachine-secure.entrypoints=https"
+      - "traefik.http.routers.dashmachine-secure.rule=Host(`dm.felted.de`)"
+      - "traefik.http.routers.dashmachine-secure.tls=true"
+      - "traefik.http.routers.dashmachine-secure.tls.certresolver=http"
+      - "traefik.http.routers.dashmachine-secure.service=dashmachine"
+      - "traefik.http.services.dashmachine.loadbalancer.server.port=5000"
+      - "traefik.docker.network=proxy"
+
+networks:
+  proxy:
+    external:
+      name: proxy
+
+# Dashmachine: https://github.com/rmountjoy92/DashMachine

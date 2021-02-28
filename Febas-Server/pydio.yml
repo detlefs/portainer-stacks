@@ -1,0 +1,57 @@
+version: 2
+
+services:
+  pydio_db:
+    image: mariadb
+    container_name: pydio_db
+    environment:
+      - MYSQL_ROOT_PASSWORD=cellsroot
+      - MYSQL_DATABASE=cells
+      - MYSQL_USER=cells
+      - MYSQL_PASSWORD=cells
+    volumes:
+      - pydio_db_data:/var/lib/mysql
+    restart: unless-stopped
+    networks:
+      - internal
+  
+  pydio:
+    image: pydio/cells:latest
+    container_name: pydio
+    restart: unless-stopped
+    depends_on:
+      - pydio_db
+    environment:
+      - CELLS_BIND=0.0.0.0:8080
+      - CELLS_EXTERNAL=https://files.felted.de
+      - CELLS_NO_TLS=1
+    volumes:
+      - pydio_cells:/var/cells
+    networks:
+      - internal
+      - proxy
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.pydio.entrypoints=http"
+      - "traefik.http.routers.pydio.rule=Host(`files.felted.de`)"
+      - "traefik.http.middlewares.pydio-https-redirect.redirectscheme.scheme=https"
+      - "traefik.http.routers.pydio.middlewares=pydio-https-redirect"
+      - "traefik.http.routers.pydio-secure.entrypoints=https"
+      - "traefik.http.routers.pydio-secure.rule=Host(`files.felted.de`)"
+      - "traefik.http.routers.pydio-secure.tls=true"
+      - "traefik.http.routers.pydio-secure.tls.certresolver=http"
+      - "traefik.http.routers.pydio-secure.service=pydio"
+      - "traefik.http.services.pydio.loadbalancer.server.port=8080"
+      - "traefik.docker.network=proxy"
+
+networks:
+  internal:
+    driver: bridge
+  proxy:
+    external:
+      name: proxy
+
+
+# Website: https://pydio.com/
+# Documentation: https://pydio.com/en/docs
+# GitHub: https://github.com/pydio/cells

@@ -1,0 +1,11 @@
+version: 2
+
+services:
+  fritzbox-monitor:
+    image: liggy1/fritzbox-monitor
+    container_name: fritzbox-monitor
+    volumes:
+      - /srv/mrtg:/var/www
+    ports:
+      - 86:80
+    restart: unless-stopped

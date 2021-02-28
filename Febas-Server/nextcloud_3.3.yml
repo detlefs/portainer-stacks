@@ -1,0 +1,62 @@
+version: "3.3"
+services:
+  nextcloud-db:
+    image: mariadb
+    container_name: nextcloud-db
+    command: – transaction-isolation=READ-COMMITTED – log-bin=ROW
+    restart: unless-stopped
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+      - /etc/timezone:/etc/timezone:ro
+      - /opt/containers/nextcloud/database:/var/lib/mysql
+    environment:
+      - MYSQL_ROOT_PASSWORD=nextcloudroot #SQL root Passwort eingeben
+      - MYSQL_PASSWORD=nextcloud #SQL Benutzer Passwort eingeben
+      - MYSQL_DATABASE=nextcloud #Datenbank Name
+      - MYSQL_USER=nextcloud #SQL Nutzername
+      - MYSQL_INITDB_SKIP_TZINFO=1
+    networks:
+      - default
+  nextcloud-redis:
+    image: redis:alpine
+    container_name: nextcloud-redis
+    hostname: nextcloud-redis
+    volumes:
+      - /opt/containers/nextcloud/redis:/data
+    networks:
+      - default
+    restart: unless-stopped
+    command: redis-server – requirepass test # Redis Passwort eingeben
+  nextcloud-app:
+    image: nextcloud
+    container_name: nextcloud-app
+    restart: unless-stopped
+    depends_on:
+      - nextcloud-db
+      - nextcloud-redis
+    environment:
+      REDIS_HOST: nextcloud-redis
+      REDIS_HOST_PASSWORD: test # Redis Passwort von oben wieder eingeben
+    volumes:
+      - /opt/containers/nextcloud/app:/var/www/html
+      - /opt/containers/nextcloud/daten:/var/www/html/data
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.nextcloudapp.entrypoints=http"
+      - "traefik.http.routers.nextcloudapp.rule=Host(`cloud.felted.de`)"
+      - "traefik.http.middlewares.nextcloudapp-https-redirect.redirectscheme.scheme=https"
+      - "traefik.http.routers.nextcloudapp.middlewares=nextcloudapp-https-redirect"
+      - "traefik.http.routers.nextcloudapp-secure.entrypoints=https"
+      - "traefik.http.routers.nextcloudapp-secure.rule=Host(`cloud.felted.de`)"
+      - "traefik.http.routers.nextcloudapp-secure.tls=true"
+      - "traefik.http.routers.nextcloudapp-secure.tls.certresolver=http"
+      - "traefik.http.routers.nextcloudapp-secure.service=nextcloudapp"
+      - "traefik.http.services.nextcloudapp.loadbalancer.server.port=80"
+      - "traefik.docker.network=proxy"
+    networks:
+      - proxy
+      - default
+
+networks:
+  proxy:
+    external: true

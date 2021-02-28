@@ -1,0 +1,20 @@
+version: "2"
+
+services:
+    check-mk-raw:
+        image: "checkmk/check-mk-raw:1.6.0-latest"
+        container_name: checkmk
+        restart: unless-stopped
+        ports:
+            - "7070:5000"
+        ulimits:
+            nofile: 1024
+        tmpfs: "/opt/omd/sites/cmk/tmp:uid=1000,gid=1000"
+        volumes:
+            - "checkmk:/omd/sites"
+            - "/etc/localtime:/etc/localtime:ro"
+        dns: 192.168.178.1
+
+# Websites: https://checkmk.com/
+#           https://checkmk.com/open-source-monitoring.html
+# Docs:     https://docs.checkmk.com/latest/de/index.html

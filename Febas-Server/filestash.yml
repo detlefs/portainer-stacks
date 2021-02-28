@@ -1,0 +1,50 @@
+version: "2"
+
+services:
+  filestash:
+    container_name: filestash
+    image: machines/filestash
+    restart: unless-stopped
+    environment:
+      - APPLICATION_URL=https://files.felted.de
+      - GDRIVE_CLIENT_ID=<gdrive_client>
+      - GDRIVE_CLIENT_SECRET=<gdrive_secret>
+      - DROPBOX_CLIENT_ID=<dropbox_key>
+      - ONLYOFFICE_URL=<url>
+    volumes:
+      - filestash_data:/app/data/state
+    ports:
+      - "8334:8334"
+    networks:
+      - proxy
+      # - internal
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.filestash.entrypoints=http"
+      - "traefik.http.routers.filestash.rule=Host(`files.felted.de`)"
+      - "traefik.http.middlewares.filestash-https-redirect.redirectscheme.scheme=https"
+      - "traefik.http.routers.filestash.middlewares=filestash-https-redirect"
+      - "traefik.http.routers.filestash-secure.entrypoints=https"
+      - "traefik.http.routers.filestash-secure.rule=Host(`files.felted.de`)"
+      - "traefik.http.routers.filestash-secure.tls=true"
+      - "traefik.http.routers.filestash-secure.tls.certresolver=http"
+      - "traefik.http.routers.filestash-secure.service=filestash"
+      - "traefik.http.services.filestash.loadbalancer.server.port=8334"
+      - "traefik.docker.network=proxy"
+
+  # onlyoffice:
+  #   container_name: filestash_oods
+  #   image: onlyoffice/documentserver
+  #   restart: unless-stopped
+  #   networks:
+  #     - internal
+
+networks:
+  # internal:
+  #   driver: bridge
+  proxy:
+    external:
+      name: proxy
+
+
+# I^sTr~>?62nU14]-Z
